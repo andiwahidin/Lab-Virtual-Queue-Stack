@@ -1,6 +1,8 @@
 /* ==========================================================================
-   SCRIPT.JS - LAB MAYA INFORMATIKA: STRUKTUR DATA STACK & QUEUE (KELAS X)
-   Fitur: Debugging, Web Audio API Synthesizer, Simulasi 4 Misi, Ekspor PDF
+   SCRIPT.JS (VERSI PERBAIKAN) - LAB MAYA INFORMATIKA: STACK & QUEUE (KELAS X)
+   Perbaikan:
+   1. Evaluasi kontekstual cerdas (Pasien vs Dokumen vs Piring/Buku vs Umum).
+   2. Ekspor PDF A4 rapi dengan tabel bergaris & sanitasi karakter ASCII.
    ========================================================================== */
 
 const DEBUG_MODE = true;
@@ -101,7 +103,7 @@ function playSfx(kind) {
 
 function startAmbientBgm() {
   if (bgmInterval) clearInterval(bgmInterval);
-  const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63]; // C4 E4 G4 C5
+  const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
   bgmInterval = setInterval(() => {
     if (!bgmEnabled || !audioCtx || audioCtx.state !== 'running') return;
     const freq = notes[bgmStep % notes.length];
@@ -274,10 +276,82 @@ const missionCatalog = {
   4: {
     title: 'Misi 4: Eksperimen Bebas & Pengujian PEEK/FRONT',
     requiredMode: 'ANY',
-    desc: 'Pilih struktur Stack atau Queue, masukkan minimal 3 objek, gunakan tombol PEEK/FRONT untuk mengintip elemen yang siap keluar, lalu keluarkan seluruh objek hingga tuntas.',
+    desc: 'Pilih struktur Stack atau Queue, masukkan minimal 3 objek (misalnya Dokumen A.pdf s.d. Dokumen D.pdf), gunakan tombol PEEK/FRONT untuk mengintip elemen yang siap keluar, lalu keluarkan seluruh objek.',
     presetSample: ['Dokumen A.pdf', 'Dokumen B.pdf', 'Dokumen C.pdf', 'Dokumen D.pdf']
   }
 };
+
+/**
+ * Fungsi Analisis Kontekstual Cerdas
+ * Menentukan evaluasi & kesimpulan sesuai jenis objek (Pasien / Dokumen / Piring / Buku / Umum)
+ * dan struktur data aktif (STACK vs QUEUE).
+ */
+function evaluateExperimentContext(mode, inputs, outputs) {
+  const sampleText = (inputs.join(' ') + ' ' + outputs.join(' ')).toLowerCase();
+  const firstIn = inputs[0] || '-';
+  const firstOut = outputs[0] || '-';
+
+  const isPasien = sampleText.includes('pasien') || sampleText.includes('loket');
+  const isDokumen = sampleText.includes('dokumen') || sampleText.includes('.pdf') || sampleText.includes('print');
+  const isPiringBuku = sampleText.includes('piring') || sampleText.includes('buku') || sampleText.includes('kardus');
+
+  if (mode === 'STACK') {
+    if (isPasien) {
+      return {
+        statusClass: 'warn',
+        htmlMsg: `Pada <strong>Stack (LIFO)</strong>, pasien pertama datang adalah <em>${firstIn}</em>, tetapi yang dipanggil pertama justru <strong>${firstOut}</strong>! Untuk antrean pasien di loket rumah sakit, urutan ini <strong>Tidak Adil</strong> karena formulir pasien pertama tertimbun di paling bawah.`,
+        tableSummary: `Tidak Adil untuk antrean loket (Pasien terakhir masuk [${firstOut}] justru dipanggil pertama / prinsip LIFO)`
+      };
+    }
+    if (isDokumen) {
+      return {
+        statusClass: 'good',
+        htmlMsg: `Pada <strong>Stack (LIFO)</strong>, dokumen terakhir yang masuk (<strong>${firstOut}</strong>) diproses pertama kali. Cocok untuk fitur <em>Recent Files (Dokumen Terakhir Dibuka)</em> atau pembatalan aksi <em>Undo</em>, namun tidak cocok untuk antrean cetak printer.`,
+        tableSummary: `Prinsip LIFO pada Dokumen: Objek terakhir masuk (${firstOut}) keluar pertama (Cocok untuk fitur Undo / Recent Docs)`
+      };
+    }
+    if (isPiringBuku) {
+      return {
+        statusClass: 'good',
+        htmlMsg: `Pada <strong>Stack (LIFO)</strong>, benda terakhir yang ditaruh di puncak tumpukan (<strong>${firstOut}</strong>) diambil pertama kali agar tumpukan fisik tetap stabil dan aman.`,
+        tableSummary: `Sesuai karakteristik tumpukan fisik / LIFO (${firstOut} di puncak tumpukan diambil lebih dulu)`
+      };
+    }
+    return {
+      statusClass: 'good',
+      htmlMsg: `Pada <strong>Stack (LIFO)</strong>, objek terakhir yang masuk (<strong>${firstOut}</strong>) menjadi yang pertama dikeluarkan.`,
+      tableSummary: `Sesuai prinsip Stack / LIFO: Elemen terakhir masuk (${firstOut}) keluar pertama kali`
+    };
+  } else {
+    // Mode QUEUE (FIFO)
+    if (isPasien) {
+      return {
+        statusClass: 'good',
+        htmlMsg: `Pada <strong>Queue (FIFO)</strong>, pasien pertama yang datang (<strong>${firstIn}</strong>) juga menjadi yang pertama dipanggil (<strong>${firstOut}</strong>). Urutan ini <strong>Adil &amp; Tepat</strong> untuk pelayanan loket rumah sakit!`,
+        tableSummary: `Adil untuk antrean loket rumah sakit (Pasien pertama datang [${firstIn}] dilayani pertama / prinsip FIFO)`
+      };
+    }
+    if (isDokumen) {
+      return {
+        statusClass: 'good',
+        htmlMsg: `Pada <strong>Queue (FIFO)</strong>, dokumen pertama yang dikirim (<strong>${firstIn}</strong>) dicetak/diproses paling awal (<strong>${firstOut}</strong>). Sangat tepat untuk sistem <em>Printer Spooler (Antrean Cetak Dokumen)</em>!`,
+        tableSummary: `Tepat untuk antrean cetak / Printer Spooler (Dokumen pertama masuk [${firstIn}] diproses lebih dulu / prinsip FIFO)`
+      };
+    }
+    if (isPiringBuku) {
+      return {
+        statusClass: 'warn',
+        htmlMsg: `Pada <strong>Queue (FIFO)</strong>, objek pertama (<strong>${firstIn}</strong>) diambil lebih dulu. Jika diterapkan pada tumpukan piring fisik, mengambil piring paling bawah terlebih dahulu akan menyulitkan secara fisik.`,
+        tableSummary: `Prinsip FIFO pada Objek Fisik: ${firstIn} keluar pertama (Kurang praktis jika objek disusun bertumpuk vertikal)`
+      };
+    }
+    return {
+      statusClass: 'good',
+      htmlMsg: `Pada <strong>Queue (FIFO)</strong>, objek pertama yang masuk (<strong>${firstIn}</strong>) juga menjadi objek pertama yang keluar (<strong>${firstOut}</strong>).`,
+      tableSummary: `Sesuai prinsip Queue / FIFO: Elemen pertama masuk (${firstIn}) keluar pertama kali`
+    };
+  }
+}
 
 function selectMission(mId) {
   playSfx('click');
@@ -300,7 +374,6 @@ function selectMission(mId) {
     statusBadge.classList.remove('done');
   }
 
-  // Otomatis sesuaikan mode pada Misi 1-3 untuk memudahkan orientasi awal
   if (m.requiredMode !== 'ANY') {
     setStructureMode(m.requiredMode, true);
   }
@@ -361,7 +434,6 @@ function handleInsertItem() {
     return;
   }
 
-  // Cek kesesuaian mode dengan misi aktif
   const reqMode = missionCatalog[currentMission].requiredMode;
   if (reqMode !== 'ANY' && currentMode !== reqMode) {
     playSfx('error');
@@ -387,7 +459,6 @@ function handleInsertItem() {
   appendOpLog(`[${opName}] "${label}" disimpan ke dalam ${currentMode}.`);
   debugLog('SIMULASI', `${opName}: ${label}`, memoryBuffer);
 
-  // Otomatis geser pilihan dropdown ke item berikutnya agar praktikum lancar
   const select = document.getElementById('presetItemSelect');
   if (select.selectedIndex < select.options.length - 1) {
     select.selectedIndex++;
@@ -413,11 +484,9 @@ function handleRemoveItem() {
   let opName = '';
 
   if (currentMode === 'STACK') {
-    // LIFO: Ambil dari posisi paling atas (elemen terakhir yang masuk)
     removedItem = memoryBuffer.pop();
     opName = 'POP';
   } else {
-    // FIFO: Ambil dari posisi paling depan (elemen pertama yang masuk)
     removedItem = memoryBuffer.shift();
     opName = 'DEQUEUE';
   }
@@ -524,7 +593,6 @@ function renderVisualizer() {
     ptrLeft.textContent = `📌 Bottom (Pertama Masuk): ${memoryBuffer[0]}`;
     ptrRight.textContent = `🎯 Top (Siap POP): ${memoryBuffer[memoryBuffer.length - 1]}`;
   } else {
-    // Mode QUEUE: Tampilkan dari Kiri (REAR / Masuk) ke Kanan (FRONT / Keluar) seperti Gambar 2.3 Buku
     const reversedForQueueView = [...memoryBuffer].reverse();
     reversedForQueueView.forEach((item, revIdx) => {
       const isFront = revIdx === reversedForQueueView.length - 1;
@@ -555,7 +623,6 @@ function updateTelemetry() {
   document.getElementById('teleErrorCount').textContent = `${errorSteps} Kali`;
   document.getElementById('outCountBadge').textContent = `${outputHistory.length} Objek`;
 
-  // Render daftar urutan objek yang sudah dikeluarkan
   const procList = document.getElementById('processedList');
   procList.innerHTML = '';
   if (outputHistory.length === 0) {
@@ -569,28 +636,16 @@ function updateTelemetry() {
     });
   }
 
-  // Analisis diagnostik otomatis
   const diagBox = document.getElementById('diagnosticAlert');
   const diagText = document.getElementById('diagnosticText');
 
   if (outputHistory.length === 0) {
     diagBox.className = 'diagnostic-box neutral';
     diagText.textContent = 'Masukkan minimal 3 data pasien/objek lalu keluarkan satu per satu untuk menguji urutan pemrosesannya.';
-  } else if (currentMode === 'STACK') {
-    const firstIn = inputHistory[0];
-    const firstOut = outputHistory[0];
-    if (firstIn.toLowerCase().includes('pasien')) {
-      diagBox.className = 'diagnostic-box warn';
-      diagText.innerHTML = `Pada <strong>Stack (LIFO)</strong>, yang pertama masuk adalah <em>${firstIn}</em>, tetapi yang dipanggil pertama justru <strong>${firstOut}</strong>! Untuk antrean pasien di loket rumah sakit, urutan ini <strong>Tidak Adil</strong> karena pasien yang datang paling awal tertimbun di paling bawah.`;
-    } else {
-      diagBox.className = 'diagnostic-box good';
-      diagText.innerHTML = `Pada <strong>Stack (LIFO)</strong>, objek terakhir yang ditaruh di atas (<strong>${firstOut}</strong>) diambil pertama kali. Cocok untuk tumpukan piring, tumpukan buku, atau fitur <em>Undo</em>.`;
-    }
   } else {
-    const firstIn = inputHistory[0];
-    const firstOut = outputHistory[0];
-    diagBox.className = 'diagnostic-box good';
-    diagText.innerHTML = `Pada <strong>Queue (FIFO)</strong>, objek pertama yang masuk (<strong>${firstIn}</strong>) juga menjadi yang pertama keluar/dilayani (<strong>${firstOut}</strong>). Urutan ini <strong>Adil &amp; Tepat</strong> untuk antrean loket rumah sakit!`;
+    const contextEval = evaluateExperimentContext(currentMode, inputHistory, outputHistory);
+    diagBox.className = `diagnostic-box ${contextEval.statusClass}`;
+    diagText.innerHTML = contextEval.htmlMsg;
   }
 }
 
@@ -615,15 +670,7 @@ function recordAndVerifyExperiment() {
   }
 
   const principleStr = currentMode === 'STACK' ? 'Stack (LIFO)' : 'Queue (FIFO)';
-  let evaluationStr = '';
-
-  if (currentMode === 'STACK' && inputHistory[0].toLowerCase().includes('pasien')) {
-    evaluationStr = 'Tidak Adil untuk antrean loket (Pasien terakhir masuk justru dipanggil pertama / LIFO)';
-  } else if (currentMode === 'QUEUE') {
-    evaluationStr = 'Adil untuk antrean loket (Pasien pertama datang dilayani pertama / FIFO)';
-  } else {
-    evaluationStr = 'Sesuai karakteristik tumpukan fisik / LIFO (Objek paling atas diambil lebih dulu)';
-  }
+  const contextEval = evaluateExperimentContext(currentMode, inputHistory, outputHistory);
 
   const record = {
     no: experimentRecords.length + 1,
@@ -631,7 +678,7 @@ function recordAndVerifyExperiment() {
     structure: principleStr,
     inputs: inputHistory.join(' → '),
     outputs: outputHistory.join(' → '),
-    evaluation: evaluationStr
+    evaluation: contextEval.tableSummary
   };
 
   experimentRecords.push(record);
@@ -679,7 +726,7 @@ function clearExperimentTable() {
 }
 
 /* ==========================================================================
-   4. VALIDASI DIAGNOSTik OTOMATIS LKPD (SOAL NOMOR 5 - 8)
+   4. VALIDASI DIAGNOSTIK OTOMATIS LKPD (SOAL NOMOR 5 - 8)
    ========================================================================== */
 const diagnosticKeys = {
   5: {
@@ -733,8 +780,26 @@ function checkDiagnosticAnswer(qNum) {
 }
 
 /* ==========================================================================
-   5. EKSPOR LKPD KE PDF UKURAN A4 MENGGUNAKAN JSPDF 2.5.1
+   5. EKSPOR LKPD KE PDF UKURAN A4 (RAPI, BEBAS SIMBOL RUSAK, & BERGARIS)
    ========================================================================== */
+
+/**
+ * Membersihkan karakter Unicode (seperti panah '→' atau bullet '•') yang
+ * menyebabkan bug tanda seru '!' dan salah hitung lebar teks pada jsPDF Helvetica.
+ */
+function sanitizeForPdf(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/→/g, '->')
+    .replace(/←/g, '<-')
+    .replace(/•/g, '-')
+    .replace(/—/g, '-')
+    .replace(/–/g, '-')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[^\x20-\x7E\xA0-\xFF\n\r\t]/g, '');
+}
+
 function exportLkpdToPdf() {
   initAudioEngine();
   playSfx('click');
@@ -748,88 +813,124 @@ function exportLkpdToPdf() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-    const studentName = (document.getElementById('studentName').value || 'Siswa_Tanpa_Nama').trim();
-    const studentClass = (document.getElementById('studentClass').value || '-').trim();
-    const dateStr = new Date().toLocaleDateString('id-ID', {
+    const studentName = sanitizeForPdf((document.getElementById('studentName').value || 'Siswa_Tanpa_Nama').trim());
+    const studentClass = sanitizeForPdf((document.getElementById('studentClass').value || '-').trim());
+    const dateStr = sanitizeForPdf(new Date().toLocaleDateString('id-ID', {
       day: '2-digit', month: 'long', year: 'numeric'
-    });
+    }));
 
-    let y = 18;
-    const leftMargin = 16;
-    const maxLineWidth = 178;
+    const leftMargin = 15;
+    const rightMargin = 195;
+    const contentWidth = rightMargin - leftMargin; // 180 mm
+    let y = 16;
 
-    const checkPageBreak = (neededHeight = 14) => {
-      if (y + neededHeight > 272) {
+    const checkPageBreak = (neededHeight = 15) => {
+      if (y + neededHeight > 276) {
         doc.addPage();
-        y = 18;
+        y = 16;
       }
     };
 
-    // KOP LAPORAN
+    // 1. KOP LAPORAN
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
+    doc.setFontSize(12.5);
     doc.text('LAPORAN PRAKTIKUM LABORATORIUM VIRTUAL INFORMATIKA', 105, y, { align: 'center' });
-    y += 6;
-    doc.setFontSize(11);
+    y += 5.5;
+    doc.setFontSize(10.5);
     doc.text('Topik: Memilih Struktur Data Tumpukan (Stack) & Antrean (Queue)', 105, y, { align: 'center' });
     y += 5;
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.text('SMA Negeri 12 Wajo • Fase E / Kelas X • Pengembang: Andi Wahidin Burhanuddin', 105, y, { align: 'center' });
-    y += 4;
+    doc.setFontSize(8.8);
+    doc.text('SMA Negeri 12 Wajo | Fase E / Kelas X | Pengembang: Andi Wahidin Burhanuddin', 105, y, { align: 'center' });
+    y += 3.5;
+    doc.setDrawColor(40, 40, 40);
     doc.setLineWidth(0.5);
-    doc.line(leftMargin, y, 194, y);
-    y += 7;
+    doc.line(leftMargin, y, rightMargin, y);
+    y += 5.5;
 
-    // IDENTITAS SISWA
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text(`Nama Siswa : ${studentName}`, leftMargin, y);
-    doc.text(`Tanggal : ${dateStr}`, 130, y);
-    y += 6;
-    doc.text(`Kelas / Rombel : ${studentClass}`, leftMargin, y);
-    y += 8;
+    // 2. KOTAK IDENTITAS SISWA
+    doc.setFillColor(245, 247, 250);
+    doc.setDrawColor(180, 190, 205);
+    doc.setLineWidth(0.3);
+    doc.rect(leftMargin, y, contentWidth, 14, 'FD');
 
-    // REKAP TABEL DATA HASIL PERCOBAAN
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10.5);
+    doc.setFontSize(9.2);
+    doc.setTextColor(20, 20, 20);
+    doc.text(`Nama Siswa   : ${studentName}`, leftMargin + 3, y + 5.5);
+    doc.text(`Tanggal Praktikum : ${dateStr}`, leftMargin + 108, y + 5.5);
+    doc.text(`Kelas / Rombel : ${studentClass}`, leftMargin + 3, y + 11);
+    y += 20;
+
+    // 3. BAGIAN I: REKAP DATA HASIL PERCOBAAN SIMULASI (KOTAK TERSTRUKTUR RAPI)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.2);
     doc.text('I. REKAP DATA HASIL PERCOBAAN SIMULASI', leftMargin, y);
-    y += 5;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
+    y += 4.5;
 
     if (experimentRecords.length === 0) {
-      doc.text('- Belum ada data percobaan yang direkam pada tabel simulasi.', leftMargin, y);
-      y += 7;
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(9);
+      doc.text('Belum ada data percobaan yang direkam pada tabel simulasi.', leftMargin + 2, y + 4);
+      y += 10;
     } else {
       experimentRecords.forEach((rec, idx) => {
-        checkPageBreak(22);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${idx + 1}. ${rec.mission} [${rec.structure}]`, leftMargin, y);
-        y += 4.5;
+        const titleLine = sanitizeForPdf(`${idx + 1}. ${rec.mission}  [${rec.structure}]`);
+        const inText = sanitizeForPdf(`Urutan Masuk (Input)   : ${rec.inputs}`);
+        const outText = sanitizeForPdf(`Urutan Keluar (Output) : ${rec.outputs}`);
+        const evalText = sanitizeForPdf(`Evaluasi / Kesimpulan  : ${rec.evaluation}`);
+
         doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.6);
+        const innerMaxW = contentWidth - 6; // 174 mm aman di dalam kotak
 
-        const inLines = doc.splitTextToSize(`   • Urutan Masuk (Input) : ${rec.inputs}`, maxLineWidth);
-        doc.text(inLines, leftMargin, y);
-        y += inLines.length * 4.3;
+        const inLines = doc.splitTextToSize(inText, innerMaxW);
+        const outLines = doc.splitTextToSize(outText, innerMaxW);
+        const evalLines = doc.splitTextToSize(evalText, innerMaxW);
 
-        const outLines = doc.splitTextToSize(`   • Urutan Keluar (Output): ${rec.outputs}`, maxLineWidth);
-        doc.text(outLines, leftMargin, y);
-        y += outLines.length * 4.3;
+        const lineH = 4.1;
+        const boxHeight = 7 + (inLines.length + outLines.length + evalLines.length) * lineH + 3.5;
 
-        const evalLines = doc.splitTextToSize(`   • Evaluasi : ${rec.evaluation}`, maxLineWidth);
-        doc.text(evalLines, leftMargin, y);
-        y += evalLines.length * 4.3 + 2;
+        checkPageBreak(boxHeight + 4);
+
+        // Gambar Kotak Kartu Rekaman Percobaan
+        doc.setFillColor(250, 252, 255);
+        doc.setDrawColor(160, 175, 195);
+        doc.setLineWidth(0.25);
+        doc.rect(leftMargin, y, contentWidth, boxHeight, 'FD');
+
+        // Header Bar Kartu
+        doc.setFillColor(230, 238, 248);
+        doc.rect(leftMargin, y, contentWidth, 6, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.8);
+        doc.text(titleLine, leftMargin + 2.5, y + 4.3);
+
+        let curY = y + 10;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+
+        doc.text(inLines, leftMargin + 3, curY);
+        curY += inLines.length * lineH + 0.5;
+
+        doc.text(outLines, leftMargin + 3, curY);
+        curY += outLines.length * lineH + 0.5;
+
+        doc.setFont('helvetica', 'bold');
+        doc.text(evalLines, leftMargin + 3, curY);
+
+        y += boxHeight + 3.5;
       });
     }
 
     y += 3;
     checkPageBreak(16);
+
+    // 4. BAGIAN II: JAWABAN LKPD 10 SOAL
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10.5);
+    doc.setFontSize(10.2);
     doc.text('II. JAWABAN LEMBAR KERJA PESERTA DIDIK (10 SOAL)', leftMargin, y);
-    y += 6;
+    y += 5.5;
 
     const questionsMeta = [
       '1. Analisis urutan panggilan pasien dengan metode Stack (LIFO) di loket rumah sakit dan keadilannya:',
@@ -846,24 +947,29 @@ function exportLkpdToPdf() {
 
     questionsMeta.forEach((qTitle, index) => {
       const qId = index + 1;
-      const rawAns = (document.getElementById(`q${qId}`).value || '(Belum dijawab)').trim();
+      const rawVal = (document.getElementById(`q${qId}`).value || '').trim();
+      const cleanAns = sanitizeForPdf(rawVal || '(Belum dijawab)');
 
-      checkPageBreak(18);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9.5);
-      const qLines = doc.splitTextToSize(qTitle, maxLineWidth);
-      doc.text(qLines, leftMargin, y);
-      y += qLines.length * 4.5;
+      doc.setFontSize(9);
+      const qLines = doc.splitTextToSize(sanitizeForPdf(qTitle), contentWidth);
 
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.2);
-      const ansLines = doc.splitTextToSize(`Jawaban: ${rawAns}`, maxLineWidth);
-      ansLines.forEach(line => {
-        checkPageBreak(7);
-        doc.text(line, leftMargin + 3, y);
-        y += 4.5;
-      });
-      y += 2.5;
+      doc.setFontSize(8.8);
+      const ansLines = doc.splitTextToSize(`Jawaban: ${cleanAns}`, contentWidth - 4);
+
+      const blockH = (qLines.length * 4.2) + (ansLines.length * 4.2) + 4;
+      checkPageBreak(blockH);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text(qLines, leftMargin, y);
+      y += qLines.length * 4.2 + 0.5;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.8);
+      doc.text(ansLines, leftMargin + 3, y);
+      y += ansLines.length * 4.2 + 3;
     });
 
     const safeName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -871,7 +977,7 @@ function exportLkpdToPdf() {
     doc.save(fileName);
 
     playSfx('success');
-    debugLog('PDF_EXPORT', `Berhasil mengunduh PDF: ${fileName}`);
+    debugLog('PDF_EXPORT', `Berhasil mengunduh PDF rapi: ${fileName}`);
     showToast(`📄 Laporan PDF berhasil diunduh: ${fileName}`);
   } catch (err) {
     debugError('PDF_EXPORT', err);
@@ -916,7 +1022,6 @@ function initBackgroundCanvas() {
       if (p.x < 0 || p.x > width) p.vx *= -1;
       if (p.y < 0 || p.y > height) p.vy *= -1;
 
-      // Garis koneksi antar node yang berdekatan
       for (let j = i + 1; j < particles.length; j++) {
         const p2 = particles[j];
         const dx = p.x - p2.x;
@@ -947,7 +1052,7 @@ function initBackgroundCanvas() {
    7. INISIALISASI SAAT HALAMAN SELESAI DIMUAT
    ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-  debugLog('INIT', 'Aplikasi Lab Maya Struktur Data Stack & Queue dimuat.');
+  debugLog('INIT', 'Aplikasi Lab Maya Struktur Data Stack & Queue (Versi Perbaikan) dimuat.');
   initBackgroundCanvas();
   selectMission(1);
   renderVisualizer();

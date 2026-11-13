@@ -1,6 +1,6 @@
 /* ==========================================================================
-   STYLE.CSS - LAB MAYA INFORMATIKA: STRUKTUR DATA STACK & QUEUE (KELAS X)
-   Tema Visual: Siber Gelap (#07263d -> #020b14), Aksen #facc15 & #38bdf8
+   STYLE.CSS (VERSI PERBAIKAN RESPONSIF MOBILE & SCROLL QUEUE)
+   LAB MAYA INFORMATIKA: STRUKTUR DATA STACK & QUEUE (KELAS X)
    ========================================================================== */
 
 :root {
@@ -33,6 +33,8 @@
 
 html, body {
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
   font-family: var(--font-sans);
   background: radial-gradient(circle at 50% 0%, var(--bg-top) 0%, var(--bg-bottom) 75%);
   background-attachment: fixed;
@@ -218,6 +220,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .brand-sub {
@@ -271,6 +274,7 @@ html, body {
 .app-container {
   position: relative;
   z-index: 1;
+  width: 100%;
   max-width: 1220px;
   margin: 0 auto;
   padding: 1.8rem 1.25rem 5.5rem;
@@ -278,6 +282,8 @@ html, body {
 
 .view {
   display: none;
+  width: 100%;
+  max-width: 100%;
   animation: fadeInView 0.32s ease;
 }
 
@@ -393,6 +399,7 @@ html, body {
   border-radius: 12px;
   padding: 0.9rem;
   text-align: left;
+  min-width: 0;
 }
 
 .core-box-header {
@@ -626,6 +633,7 @@ html, body {
   padding: 1.5rem;
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.2s ease;
+  min-width: 0;
 }
 
 .theory-card:hover {
@@ -687,6 +695,8 @@ html, body {
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin-bottom: 1.6rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .theory-table-card h3 {
@@ -697,7 +707,9 @@ html, body {
 
 .table-responsive {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .comp-table, .exp-table {
@@ -768,10 +780,11 @@ html, body {
 
 /* ==========================================================================
    LAYAR 4: SIMULASI INTERAKTIF (#view-simulasi)
+   PERBAIKAN UTAMA: min-width: 0 pada Grid Item & Scroll Horizontal Queue
    ========================================================================== */
 .sim-top-grid {
   display: grid;
-  grid-template-columns: 1fr 1.35fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
   gap: 1.2rem;
   margin-bottom: 1.3rem;
 }
@@ -781,6 +794,8 @@ html, body {
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.4rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .sim-goal-card h3 {
@@ -797,6 +812,8 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
   margin-bottom: 0.55rem;
 }
 
@@ -848,14 +865,17 @@ html, body {
   border-radius: 8px;
   font-size: 0.86rem;
   color: #e2e8f0;
+  word-wrap: break-word;
 }
 
-/* Meja Kerja & Output Grid */
+/* Meja Kerja & Output Grid - WAJIB minmax(0, 1fr) agar tidak jebol di Mobile */
 .sim-workspace-grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   gap: 1.25rem;
   margin-bottom: 1.4rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .workbench-panel, .output-panel {
@@ -866,6 +886,9 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .panel-title-bar {
@@ -885,23 +908,27 @@ html, body {
 
 .mode-switch {
   display: flex;
-  gap: 0.4rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
   background: rgba(2, 11, 20, 0.75);
   padding: 0.28rem;
   border-radius: 10px;
   border: 1px solid rgba(56, 189, 248, 0.25);
+  max-width: 100%;
 }
 
 .mode-btn {
   background: transparent;
   color: var(--text-muted);
   border: none;
-  padding: 0.42rem 0.85rem;
+  padding: 0.42rem 0.75rem;
   border-radius: 7px;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 800;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex: 1 1 auto;
+  text-align: center;
 }
 
 .mode-btn.active {
@@ -914,13 +941,19 @@ html, body {
   border: 1px solid rgba(56, 189, 248, 0.2);
   border-radius: 12px;
   padding: 1rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .control-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.8rem;
   margin-bottom: 0.9rem;
+}
+
+.input-group {
+  min-width: 0;
 }
 
 .input-group label {
@@ -934,6 +967,7 @@ html, body {
 .input-group select,
 .input-group input {
   width: 100%;
+  max-width: 100%;
   background: rgba(7, 38, 61, 0.9);
   color: var(--text-main);
   border: 1px solid rgba(56, 189, 248, 0.35);
@@ -950,15 +984,17 @@ html, body {
 }
 
 .btn-action {
-  flex: 1 1 auto;
-  padding: 0.6rem 0.85rem;
+  flex: 1 1 calc(50% - 0.5rem);
+  min-width: 130px;
+  padding: 0.6rem 0.75rem;
   border-radius: 9px;
   border: none;
   font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 800;
   cursor: pointer;
   transition: transform 0.15s ease, opacity 0.15s ease;
+  text-align: center;
 }
 
 .btn-action:hover {
@@ -1003,6 +1039,10 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .stage-meta {
@@ -1016,24 +1056,27 @@ html, body {
 
 .stage-tag {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--accent-yellow);
+  word-break: break-word;
 }
 
 .stage-cap {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--accent-cyan);
 }
 
 .visual-container {
-  min-height: 230px;
+  min-height: 220px;
+  width: 100%;
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.85rem;
-  gap: 0.55rem;
+  gap: 0.65rem;
 }
 
 /* Mode Stack: Tumpukan Vertikal (Bawah ke Atas) */
@@ -1048,15 +1091,38 @@ html, body {
   border-radius: 8px 8px 0 0;
 }
 
-/* Mode Queue: Antrean Horizontal (Kiri Belakang -> Kanan Depan) */
+/* Mode Queue: Antrean Horizontal (Bisa Digeser Kiri-Kanan di Mobile!) */
 .visual-container.mode-queue {
   flex-direction: row;
   justify-content: flex-start;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scroll-behavior: smooth;
+  padding: 1rem 0.85rem 1.25rem;
   border-top: 2px dashed rgba(56, 189, 248, 0.45);
   border-bottom: 2px dashed rgba(56, 189, 248, 0.45);
   background: rgba(7, 38, 61, 0.35);
   border-radius: 10px;
+}
+
+/* Kustomisasi Scrollbar Horizontal agar Terlihat Jelas di Mobile & Desktop */
+.visual-container.mode-queue::-webkit-scrollbar {
+  height: 8px;
+}
+
+.visual-container.mode-queue::-webkit-scrollbar-track {
+  background: rgba(2, 11, 20, 0.75);
+  border-radius: 99px;
+}
+
+.visual-container.mode-queue::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-yellow));
+  border-radius: 99px;
 }
 
 .data-node {
@@ -1079,9 +1145,12 @@ html, body {
   width: 100%;
 }
 
+/* flex-shrink: 0 memastikan kotak Queue tidak gepeng namun bisa di-scroll */
 .mode-queue .data-node {
-  min-width: 145px;
+  flex: 0 0 148px;
+  min-width: 148px;
   flex-direction: column;
+  justify-content: center;
   text-align: center;
 }
 
@@ -1099,7 +1168,7 @@ html, body {
 .node-badge {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  padding: 0.12rem 0.45rem;
+  padding: 0.15rem 0.48rem;
   border-radius: 5px;
   background: rgba(2, 11, 20, 0.45);
   color: #f8fafc;
@@ -1127,15 +1196,16 @@ html, body {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.75rem;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
   font-family: var(--font-mono);
+  word-break: break-word;
 }
 
 /* Panel Kanan: Telemetry & Output */
 .telemetry-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
 }
 
@@ -1144,6 +1214,7 @@ html, body {
   border: 1px solid rgba(56, 189, 248, 0.22);
   border-radius: 10px;
   padding: 0.65rem 0.8rem;
+  min-width: 0;
 }
 
 .tele-label {
@@ -1154,9 +1225,11 @@ html, body {
 }
 
 .tele-val {
+  display: block;
   font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   color: var(--text-main);
+  word-break: break-word;
 }
 
 .highlight-cyan {
@@ -1178,6 +1251,8 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
   font-size: 0.8rem;
   font-weight: 700;
   margin-bottom: 0.55rem;
@@ -1190,6 +1265,7 @@ html, body {
   border-radius: 99px;
   font-family: var(--font-mono);
   font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .processed-list {
@@ -1259,6 +1335,7 @@ html, body {
 
 .log-list li {
   margin-bottom: 0.22rem;
+  word-break: break-word;
 }
 
 .btn-verify-full {
@@ -1286,6 +1363,9 @@ html, body {
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   padding: 1.4rem;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .exp-header {
@@ -1598,11 +1678,11 @@ html, body {
    ========================================================================== */
 .floating-audio-controls {
   position: fixed;
-  bottom: 1.25rem;
-  left: 1.25rem;
+  bottom: 1.1rem;
+  left: 1rem;
   z-index: 500;
   display: flex;
-  gap: 0.55rem;
+  gap: 0.5rem;
 }
 
 .audio-fab {
@@ -1612,10 +1692,10 @@ html, body {
   background: rgba(7, 38, 61, 0.92);
   border: 1.5px solid var(--accent-cyan);
   color: var(--text-main);
-  padding: 0.55rem 0.85rem;
+  padding: 0.5rem 0.8rem;
   border-radius: 99px;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
@@ -1635,14 +1715,17 @@ html, body {
 .toast-box {
   position: fixed;
   bottom: 1.4rem;
-  right: 1.4rem;
+  right: 1.2rem;
+  left: 1.2rem;
+  max-width: 420px;
+  margin-left: auto;
   z-index: 600;
   background: rgba(7, 38, 61, 0.96);
   border: 1.5px solid var(--accent-yellow);
   color: var(--text-main);
-  padding: 0.75rem 1.2rem;
+  padding: 0.75rem 1.1rem;
   border-radius: 12px;
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   font-weight: 700;
   box-shadow: var(--shadow-lg);
   opacity: 0;
@@ -1665,7 +1748,7 @@ html, body {
   .sim-top-grid,
   .sim-workspace-grid,
   .about-lab-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .dev-banner-card {
@@ -1680,23 +1763,73 @@ html, body {
 
 @media (max-width: 640px) {
   .app-header {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0.9rem;
+    gap: 0.65rem;
+  }
+
+  .header-nav {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-btn {
+    flex: 0 0 auto;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .app-container {
+    padding: 1.1rem 0.75rem 5.5rem;
   }
 
   .splash-card {
-    padding: 1.6rem 1.15rem;
+    padding: 1.5rem 1rem;
   }
 
   .splash-title {
-    font-size: 1.55rem;
+    font-size: 1.45rem;
+  }
+
+  .workbench-panel,
+  .output-panel,
+  .sim-goal-card,
+  .sim-mission-card,
+  .experiment-table-card {
+    padding: 1rem 0.85rem;
+  }
+
+  .control-box {
+    padding: 0.8rem;
   }
 
   .control-row,
-  .lkpd-identity-card {
-    grid-template-columns: 1fr;
+  .lkpd-identity-card,
+  .telemetry-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .theory-case-banner {
+  .action-buttons-row .btn-action {
+    flex: 1 1 100%;
+  }
+
+  .mode-queue .data-node {
+    flex: 0 0 135px;
+    min-width: 135px;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  .stage-pointers {
     flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .theory-case-banner,
+  .proc-card {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

@@ -1,0 +1,857 @@
+l<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Maya Informatika - Struktur Data Stack & Queue (Kelas X)</title>
+  <!-- Pustaka jsPDF 2.5.1 untuk Ekspor LKPD ke PDF A4 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Latar Canvas 2D Partikel Siber & Node Struktur Data -->
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+  <!-- Siluet SVG Bawah Bertema Sirkuit & Memori Data -->
+  <div class="bottom-silhouette" aria-hidden="true">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+      <path d="M0,96 L120,96 L150,64 L280,64 L310,96 L520,96 L550,48 L740,48 L770,88 L980,88 L1010,56 L1220,56 L1250,96 L1440,96 L1440,120 L0,120 Z" fill="rgba(2, 11, 20, 0.85)" stroke="rgba(56, 189, 248, 0.25)" stroke-width="1.5"/>
+      <circle cx="150" cy="64" r="4" fill="#facc15"/>
+      <circle cx="550" cy="48" r="4" fill="#38bdf8"/>
+      <circle cx="1010" cy="56" r="4" fill="#facc15"/>
+    </svg>
+  </div>
+
+  <!-- Overlay Animasi Loading -->
+  <div id="loadingOverlay" class="loading-overlay" aria-live="polite">
+    <div class="loading-card">
+      <div class="loading-badge">INISIALISASI LABORATORIUM</div>
+      <h2 class="loading-title">Memuat Modul Struktur Data</h2>
+      <p id="loadingStepText" class="loading-step">Menyiapkan blok memori Stack (LIFO) & Queue (FIFO)...</p>
+
+      <!-- Indikator Visual Node Memori Menyala Bertahap -->
+      <div class="loading-nodes" id="loadingNodes">
+        <span class="l-node">01</span>
+        <span class="l-node">02</span>
+        <span class="l-node">03</span>
+        <span class="l-node">04</span>
+        <span class="l-node">05</span>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <div id="loadingBar" class="progress-bar-fill" style="width: 0%;"></div>
+      </div>
+      <div id="loadingPercent" class="loading-percent">0%</div>
+    </div>
+  </div>
+
+  <!-- Navigasi Header Global (Tampil Setelah Splash Screen) -->
+  <header id="mainHeader" class="app-header hidden">
+    <div class="header-brand" onclick="navigateTo('home')" role="button" tabindex="0">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#facc15" stroke-width="2">
+          <rect x="4" y="4" width="16" height="4" rx="1"/>
+          <rect x="4" y="10" width="16" height="4" rx="1"/>
+          <rect x="4" y="16" width="16" height="4" rx="1"/>
+        </svg>
+      </div>
+      <div>
+        <span class="brand-sub">LAB MAYA INFORMATIKA • KELAS X</span>
+        <h1 class="brand-title">Struktur Data: Stack &amp; Queue</h1>
+      </div>
+    </div>
+
+    <nav class="header-nav" aria-label="Navigasi Utama">
+      <button class="nav-btn" data-target="home" onclick="navigateTo('home')">Beranda</button>
+      <button class="nav-btn" data-target="teori" onclick="navigateTo('teori')">Teori</button>
+      <button class="nav-btn" data-target="simulasi" onclick="navigateTo('simulasi')">Simulasi</button>
+      <button class="nav-btn" data-target="prosedur" onclick="navigateTo('prosedur')">Prosedur</button>
+      <button class="nav-btn" data-target="lkpd" onclick="navigateTo('lkpd')">LKPD</button>
+      <button class="nav-btn" data-target="pengembang" onclick="navigateTo('pengembang')">Pengembang</button>
+    </nav>
+  </header>
+
+  <main class="app-container">
+    <!-- =========================================================
+         LAYAR 1: SPLASH SCREEN STATIS YANG MENARIK (#view-splash)
+         ========================================================= -->
+    <section id="view-splash" class="view active">
+      <div class="splash-card">
+        <div class="splash-badge">INFORMATIKA • FASE E / KELAS X SMA/MA/SMK</div>
+        <h1 class="splash-title">Laboratorium Virtual Struktur Data:<br/><span>Tumpukan (Stack) &amp; Antrean (Queue)</span></h1>
+        <p class="splash-desc">
+          Eksplorasi interaktif cara memilih struktur penyimpanan data untuk menyelesaikan masalah kehidupan nyata—mulai dari antrean formulir pasien di loket rumah sakit hingga tumpukan buku dan piring.
+        </p>
+
+        <!-- Panel Visual Inti Materi (Diagram Stack vs Queue Sesuai Buku Gambar 2.3) -->
+        <div class="splash-core-panel">
+          <div class="core-diagram-grid">
+            <!-- Diagram Stack -->
+            <div class="core-box">
+              <div class="core-box-header">
+                <span class="core-tag tag-yellow">STACK (TUMPUKAN)</span>
+                <span class="core-prin">Prinsip: LIFO (Last In First Out)</span>
+              </div>
+              <svg viewBox="0 0 320 115" class="core-svg" aria-label="Ilustrasi Stack Push dan Pop">
+                <text x="14" y="22" fill="#94a3b8" font-size="11" font-family="JetBrains Mono">stack</text>
+                <!-- Sel Memori Stack -->
+                <g transform="translate(14, 30)">
+                  <rect x="0" y="0" width="22" height="24" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="22" y="0" width="22" height="24" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="44" y="0" width="22" height="24" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="66" y="0" width="22" height="24" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="88" y="0" width="22" height="24" fill="#0284c7" stroke="#facc15" stroke-width="1.5"/>
+                  <rect x="110" y="0" width="22" height="24" fill="#0369a1" stroke="#facc15" stroke-width="1.5"/>
+                  <rect x="132" y="0" width="22" height="24" fill="#facc15" stroke="#ffffff" stroke-width="1.5"/>
+                  <text x="12" y="16" fill="#e2e8f0" font-size="10" text-anchor="middle">A</text>
+                  <text x="34" y="16" fill="#e2e8f0" font-size="10" text-anchor="middle">B</text>
+                  <text x="56" y="16" fill="#e2e8f0" font-size="10" text-anchor="middle">C</text>
+                  <text x="78" y="16" fill="#e2e8f0" font-size="10" text-anchor="middle">D</text>
+                  <text x="100" y="16" fill="#ffffff" font-size="10" text-anchor="middle">E</text>
+                  <text x="122" y="16" fill="#ffffff" font-size="10" text-anchor="middle">F</text>
+                  <text x="143" y="16" fill="#020b14" font-weight="bold" font-size="10" text-anchor="middle">TOP</text>
+                </g>
+                <!-- Panah Push & Pop -->
+                <path d="M198,24 L176,36" stroke="#facc15" stroke-width="2.2" marker-end="url(#arrowY)"/>
+                <text x="204" y="25" fill="#facc15" font-size="11" font-weight="bold">push (masuk)</text>
+                <path d="M176,50 L198,62" stroke="#38bdf8" stroke-width="2.2"/>
+                <text x="204" y="66" fill="#38bdf8" font-size="11" font-weight="bold">pop (keluar)</text>
+                <text x="14" y="92" fill="#cbd5e1" font-size="11">Analogi: Tumpukan buku / piring (masuk &amp; keluar dari atas)</text>
+              </svg>
+            </div>
+
+            <!-- Diagram Queue -->
+            <div class="core-box">
+              <div class="core-box-header">
+                <span class="core-tag tag-cyan">QUEUE (ANTREAN)</span>
+                <span class="core-prin">Prinsip: FIFO (First In First Out)</span>
+              </div>
+              <svg viewBox="0 0 320 115" class="core-svg" aria-label="Ilustrasi Queue Enqueue dan Dequeue">
+                <text x="82" y="22" fill="#94a3b8" font-size="11" font-family="JetBrains Mono">queue</text>
+                <text x="8" y="46" fill="#facc15" font-size="11" font-weight="bold">enqueue →</text>
+                <!-- Sel Memori Queue -->
+                <g transform="translate(76, 30)">
+                  <rect x="0" y="0" width="22" height="24" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="22" y="0" width="22" height="24" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="44" y="0" width="22" height="24" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="66" y="0" width="22" height="24" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="88" y="0" width="22" height="24" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                  <rect x="110" y="0" width="22" height="24" fill="#facc15" stroke="#ffffff" stroke-width="1.5"/>
+                  <text x="11" y="16" fill="#ffffff" font-size="9" text-anchor="middle">REAR</text>
+                  <text x="33" y="16" fill="#e2e8f0" font-size="10" text-anchor="middle">E</text>
+                  <text x="55" y="16" fill="#e2e8f0" font-size="10" text-anchor="middle">D</text>
+                  <text x="77" y="16" fill="#e2e8f0" font-size="10" text-anchor="middle">C</text>
+                  <text x="99" y="16" fill="#e2e8f0" font-size="10" text-anchor="middle">B</text>
+                  <text x="121" y="16" fill="#020b14" font-weight="bold" font-size="10" text-anchor="middle">A</text>
+                </g>
+                <text x="216" y="46" fill="#38bdf8" font-size="11" font-weight="bold">→ dequeue</text>
+                <text x="14" y="92" fill="#cbd5e1" font-size="11">Analogi: Antrean loket rumah sakit (datang dulu, dilayani dulu)</text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="splash-features">
+            <span class="feat-pill">⚡ Simulasi Loket Rumah Sakit &amp; Memori</span>
+            <span class="feat-pill">📊 Tabel Rekaman Data &amp; Verifikasi Misi</span>
+            <span class="feat-pill">📄 LKPD 10 Soal + Ekspor PDF Otomatis</span>
+          </div>
+        </div>
+
+        <button id="btnStartLab" class="btn-primary-xl" onclick="startPracticum()">
+          <span>Mulai Praktikum</span>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M13 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+        <div class="splash-credit">
+          Dikembangkan oleh <strong>Andi Wahidin Burhanuddin</strong> • Guru Informatika SMA Negeri 12 Wajo, Sulawesi Selatan
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         LAYAR 2: BERANDA / MENU UTAMA (#view-home)
+         ========================================================= -->
+    <section id="view-home" class="view">
+      <div class="home-hero">
+        <span class="section-badge">INFORMATIKA KELAS X • STRUKTUR DATA</span>
+        <h2 class="home-question">
+          Mengapa Menumpuk Formulir Pasien di Loket Rumah Sakit Membuat Antrean Menjadi Tidak Adil?
+        </h2>
+        <p class="home-subtitle">
+          Temukan jawabannya dengan membandingkan cara kerja <strong>Tumpukan (Stack / LIFO)</strong> dan <strong>Antrean (Queue / FIFO)</strong> melalui eksperimen langsung di laboratorium virtual ini.
+        </p>
+      </div>
+
+      <div class="menu-grid">
+        <!-- Kartu 1: Teori -->
+        <article class="menu-card" onclick="navigateTo('teori')" tabindex="0" role="button">
+          <div class="menu-icon-wrap">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#facc15" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <h3>Materi &amp; Teori Visual</h3>
+          <p>Pelajari konsep penyimpanan objek menggunakan Antrean (FIFO) dan Tumpukan (LIFO) beserta studi kasus nyata.</p>
+          <span class="menu-link">Buka Materi →</span>
+        </article>
+
+        <!-- Kartu 2: Simulasi -->
+        <article class="menu-card highlight-card" onclick="navigateTo('simulasi')" tabindex="0" role="button">
+          <div class="menu-icon-wrap">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#38bdf8" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+              <path d="M7 10h3m4 0h3"/>
+            </svg>
+          </div>
+          <h3>Simulasi &amp; Meja Kerja</h3>
+          <p>Uji coba langsung operasi Push/Pop dan Enqueue/Dequeue pada skenario Loket Rumah Sakit dalam 4 misi praktikum.</p>
+          <span class="menu-link">Mulai Simulasi →</span>
+        </article>
+
+        <!-- Kartu 3: Prosedur -->
+        <article class="menu-card" onclick="navigateTo('prosedur')" tabindex="0" role="button">
+          <div class="menu-icon-wrap">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#facc15" stroke-width="2">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          <h3>Prosedur Percobaan</h3>
+          <p>Ikuti 7 langkah kerja sistematis dari persiapan misi simulasi hingga verifikasi tabel data dan pencetakan LKPD.</p>
+          <span class="menu-link">Lihat Prosedur →</span>
+        </article>
+
+        <!-- Kartu 4: LKPD -->
+        <article class="menu-card" onclick="navigateTo('lkpd')" tabindex="0" role="button">
+          <div class="menu-icon-wrap">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#38bdf8" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <h3>LKPD Digital &amp; PDF</h3>
+          <p>Kerjakan 10 soal analisis, diagnostik terotomasi, dan kesimpulan, lalu unduh bukti laporan praktikum berformat PDF A4.</p>
+          <span class="menu-link">Kerjakan LKPD →</span>
+        </article>
+
+        <!-- Kartu 5: Pengembang -->
+        <article class="menu-card" onclick="navigateTo('pengembang')" tabindex="0" role="button">
+          <div class="menu-icon-wrap">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#facc15" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h3>Profil Pengembang</h3>
+          <p>Informasi pendidik pengembang media pembelajaran, spesifikasi teknologi web, dan capaian pembelajaran kurikulum.</p>
+          <span class="menu-link">Lihat Profil →</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         LAYAR 3: MATERI DAN TEORI VISUAL (#view-teori)
+         ========================================================= -->
+    <section id="view-teori" class="view">
+      <div class="section-header">
+        <span class="section-badge">REFERENSI TEORI &amp; KONSEP</span>
+        <h2>Memilih Struktur Data untuk Masalah di Kehidupan Nyata</h2>
+        <p>Klik pada setiap kartu materi di bawah ini untuk mendengarkan umpan balik audio dan mempelajari cara kerja struktur data.</p>
+      </div>
+
+      <!-- Studi Kasus Pemantik: Loket Rumah Sakit -->
+      <div class="theory-case-banner" onclick="playInteractiveCardSound('case')">
+        <div class="case-icon">🏥</div>
+        <div class="case-content">
+          <h3>Studi Kasus: Tumpukan Formulir di Loket Rumah Sakit</h3>
+          <p>
+            Bayangkan sebuah loket pendaftaran di rumah sakit. Para pasien yang hendak berobat mengisi formulir pendaftaran, lalu menyerahkannya ke loket sambil menunggu dokter tiba.
+            Misalkan petugas loket <strong>menumpuk formulir baru tepat di atas formulir yang diterima sebelumnya</strong>. Saat dokter tiba, petugas memanggil pasien mulai dari formulir yang berada <strong>paling atas tumpukan</strong>.
+          </p>
+          <p class="case-highlight">
+            💡 <strong>Pertanyaan Kritis:</strong> Pasien yang datang paling pagi justru formulirnya tertimbun paling bawah dan dipanggil paling terakhir! Mengapa hal ini terjadi? Karena petugas menerapkan struktur <strong>Stack (LIFO)</strong>, padahal pelayanan antrean pasien seharusnya menggunakan <strong>Queue (FIFO)</strong>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Dua Kartu Konsep Utama (Interaktif) -->
+      <div class="theory-cards-grid">
+        <div class="theory-card" onclick="playInteractiveCardSound('queue')">
+          <div class="t-card-head">
+            <span class="t-num">1</span>
+            <div>
+              <h3>Antrean (Queue) — Prinsip FIFO</h3>
+              <span class="t-sub">First In First Out (Pertama Masuk, Pertama Keluar)</span>
+            </div>
+          </div>
+          <p>
+            Pada metode <strong>Antrean (Queue)</strong>, objek-objek disimpan berurutan layaknya antrean loket atau pintu masuk. Objek yang <em>pertama/lebih dahulu datang</em> akan berada di posisi terdepan (<strong>Front</strong>) dan menjadi yang <em>pertama keluar/selesai dilayani</em>.
+          </p>
+          <ul class="t-list">
+            <li><strong>Enqueue:</strong> Operasi memasukkan data/objek baru ke ujung belakang antrean (<em>Rear/Back</em>).</li>
+            <li><strong>Dequeue:</strong> Operasi mengeluarkan/memproses data dari ujung depan antrean (<em>Front</em>).</li>
+            <li><strong>Contoh Nyata &amp; Komputasi:</strong> Antrean pasien di loket rumah sakit, antrean cetak dokumen pada <em>printer spooler</em>, dan penjadwalan proses CPU.</li>
+          </ul>
+        </div>
+
+        <div class="theory-card" onclick="playInteractiveCardSound('stack')">
+          <div class="t-card-head">
+            <span class="t-num">2</span>
+            <div>
+              <h3>Tumpukan (Stack) — Prinsip LIFO</h3>
+              <span class="t-sub">Last In First Out (Terakhir Masuk, Pertama Keluar)</span>
+            </div>
+          </div>
+          <p>
+            Pada metode <strong>Tumpukan (Stack)</strong>, objek-objek disimpan menyerupai tumpukan piring atau tumpukan buku. Piring pertama yang diletakkan berada di posisi paling bawah, sehingga objek yang <em>terakhir masuk di bagian paling atas (Top)</em> justru menjadi yang <em>pertama diambil keluar</em>.
+          </p>
+          <ul class="t-list">
+            <li><strong>Push:</strong> Operasi menambahkan/menaruh objek baru ke posisi paling atas tumpukan (<em>Top</em>).</li>
+            <li><strong>Pop:</strong> Operasi mengambil/mengeluarkan objek dari posisi paling atas tumpukan (<em>Top</em>).</li>
+            <li><strong>Contoh Nyata &amp; Komputasi:</strong> Tumpukan piring bersih, tumpukan buku di meja, fitur <em>Undo/Redo</em> pada aplikasi pengolah kata, dan riwayat halaman <em>Back</em> pada <em>browser</em>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tabel Perbandingan Berdampingan -->
+      <div class="theory-table-card">
+        <h3>Tabel Perbandingan Struktur Data Stack vs Queue</h3>
+        <div class="table-responsive">
+          <table class="comp-table">
+            <thead>
+              <tr>
+                <th>Aspek Pembanding</th>
+                <th>Tumpukan (Stack)</th>
+                <th>Antrean (Queue)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Prinsip Urutan</strong></td>
+                <td><strong>LIFO</strong> (<em>Last In First Out</em>)</td>
+                <td><strong>FIFO</strong> (<em>First In First Out</em>)</td>
+              </tr>
+              <tr>
+                <td><strong>Operasi Memasukkan Data</strong></td>
+                <td><strong>Push</strong> (masuk dari sisi atas / <em>Top</em>)</td>
+                <td><strong>Enqueue</strong> (masuk dari sisi belakang / <em>Rear</em>)</td>
+              </tr>
+              <tr>
+                <td><strong>Operasi Mengeluarkan Data</strong></td>
+                <td><strong>Pop</strong> (keluar dari sisi atas / <em>Top</em>)</td>
+                <td><strong>Dequeue</strong> (keluar dari sisi depan / <em>Front</em>)</td>
+              </tr>
+              <tr>
+                <td><strong>Posisi Elemen Pertama Masuk</strong></td>
+                <td>Berada di dasar bawah, keluar paling akhir</td>
+                <td>Berada di barisan terdepan, keluar paling awal</td>
+              </tr>
+              <tr>
+                <td><strong>Analogi Kehidupan Sehari-hari</strong></td>
+                <td>Tumpukan piring, tumpukan buku, tumpukan kardus</td>
+                <td>Antrean loket rumah sakit, antrean kasir, jalan tol</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Kotak Penekanan Konsep Penting (HOTS) -->
+      <div class="hots-box">
+        <div class="hots-badge">🧠 KONSEP PENTING (HOTS)</div>
+        <h4>Bagaimana Cara Petugas Loket Mengubah Tumpukan Formulir Menjadi Antrean yang Adil (FIFO)?</h4>
+        <p>
+          Jika petugas loket tetap meletakkan formulir dalam tumpukan fisik di meja, ada <strong>dua solusi algoritmik</strong> agar pasien yang datang lebih dulu tetap dipanggil lebih dulu (prinsip <em>Queue/FIFO</em>):
+        </p>
+        <ol>
+          <li><strong>Solusi Penyusunan:</strong> Setiap ada formulir baru yang masuk, petugas menyelipkannya di <em>bawah tumpukan</em>, lalu memanggil dari formulir paling atas.</li>
+          <li><strong>Solusi Pemanggilan:</strong> Petugas tetap menaruh formulir baru di <em>atas tumpukan</em>, tetapi saat dokter tiba, petugas mengambil formulir untuk dipanggil mulai dari posisi <em>paling bawah tumpukan</em>.</li>
+        </ol>
+      </div>
+
+      <div class="theory-cta">
+        <button class="btn-primary-xl" onclick="navigateTo('simulasi')">
+          <span>Uji Konsep di Meja Simulasi Sekarang →</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         LAYAR 4: SIMULASI INTERAKTIF & TABEL PERCOBAAN (#view-simulasi)
+         ========================================================= -->
+    <section id="view-simulasi" class="view">
+      <!-- Bagian Atas: Tujuan Pembelajaran & Pemilih Misi (3-5 Misi Berjenjang) -->
+      <div class="sim-top-grid">
+        <div class="sim-goal-card">
+          <span class="section-badge">TUJUAN PEMBELAJARAN</span>
+          <h3>Eksperimen Struktur Data Stack (LIFO) &amp; Queue (FIFO)</h3>
+          <p>
+            Siswa mampu membedakan prosedur penyimpanan dan pengeluaran data pada <strong>Stack (Push &amp; Pop)</strong> serta <strong>Queue (Enqueue &amp; Dequeue)</strong>, menganalisis dampaknya pada kasus antrean loket rumah sakit, dan memilih struktur data yang tepat sesuai permasalahan.
+          </p>
+        </div>
+
+        <div class="sim-mission-card">
+          <div class="mission-header">
+            <span class="section-badge">PEMILIH MISI PRAKTIKUM</span>
+            <span id="missionStatusBadge" class="mission-status">Belum Tuntas</span>
+          </div>
+          <div class="mission-tabs" role="tablist">
+            <button class="m-tab active" data-mission="1" onclick="selectMission(1)">Misi 1: Kasus Loket (Stack)</button>
+            <button class="m-tab" data-mission="2" onclick="selectMission(2)">Misi 2: Solusi Loket (Queue)</button>
+            <button class="m-tab" data-mission="3" onclick="selectMission(3)">Misi 3: Tumpukan Piring (LIFO)</button>
+            <button class="m-tab" data-mission="4" onclick="selectMission(4)">Misi 4: Tantangan Urutan</button>
+          </div>
+          <div id="missionInstruction" class="mission-instruction">
+            <!-- Diisi dinamis oleh script.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Area Utama: Meja Kerja Simulasi (Kiri) & Panel Pengujian/Output (Kanan) -->
+      <div class="sim-workspace-grid">
+        <!-- KIRI: Meja Kerja Simulasi -->
+        <div class="workbench-panel">
+          <div class="panel-title-bar">
+            <h3>🛠️ Meja Kerja Struktur Data</h3>
+            <div class="mode-switch" role="group" aria-label="Pilih Struktur Data">
+              <button id="btnModeStack" class="mode-btn active" onclick="setStructureMode('STACK')">
+                STACK (Tumpukan / LIFO)
+              </button>
+              <button id="btnModeQueue" class="mode-btn" onclick="setStructureMode('QUEUE')">
+                QUEUE (Antrean / FIFO)
+              </button>
+            </div>
+          </div>
+
+          <!-- Kontrol Input Objek / Formulir Pasien -->
+          <div class="control-box">
+            <div class="control-row">
+              <div class="input-group">
+                <label for="presetItemSelect">Pilih Objek / Formulir Pasien:</label>
+                <select id="presetItemSelect" onchange="syncCustomInput()">
+                  <option value="Pasien 1 - Andi (07:00)">Pasien 1 - Andi (Datang 07:00)</option>
+                  <option value="Pasien 2 - Budi (07:05)">Pasien 2 - Budi (Datang 07:05)</option>
+                  <option value="Pasien 3 - Citra (07:10)">Pasien 3 - Citra (Datang 07:10)</option>
+                  <option value="Pasien 4 - Dedi (07:15)">Pasien 4 - Dedi (Datang 07:15)</option>
+                  <option value="Piring #1 (Biru)">Piring #1 (Biru - Pertama)</option>
+                  <option value="Piring #2 (Hijau)">Piring #2 (Hijau - Kedua)</option>
+                  <option value="Piring #3 (Kuning)">Piring #3 (Kuning - Ketiga)</option>
+                  <option value="Buku Algoritma">Buku Algoritma</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="customItemInput">Atau Ketik Label Objek:</label>
+                <input type="text" id="customItemInput" value="Pasien 1 - Andi (07:00)" maxlength="28" />
+              </div>
+            </div>
+
+            <!-- Tombol Operasi Struktur Data -->
+            <div class="action-buttons-row">
+              <button id="btnInsert" class="btn-action btn-insert" onclick="handleInsertItem()">
+                <span id="lblInsertOp">PUSH (Taruh di Atas)</span>
+              </button>
+              <button id="btnRemove" class="btn-action btn-remove" onclick="handleRemoveItem()">
+                <span id="lblRemoveOp">POP (Ambil dari Atas)</span>
+              </button>
+              <button id="btnPeek" class="btn-action btn-peek" onclick="handlePeekItem()">
+                <span>PEEK / FRONT (Intip)</span>
+              </button>
+              <button id="btnAutoFill" class="btn-action btn-autofill" onclick="handleAutoFillSample()">
+                <span>⚡ Isi 4 Data Berurutan</span>
+              </button>
+              <button id="btnResetSim" class="btn-action btn-reset" onclick="resetWorkbench()">
+                <span>🔄 Reset Meja</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Kanvas Visualizer Struktur Data (Stack Vertikal / Queue Horizontal) -->
+          <div class="visualizer-stage">
+            <div class="stage-meta">
+              <span id="stageModeLabel" class="stage-tag">MODE AKTIF: STACK (LIFO - Last In First Out)</span>
+              <span id="stageCapacityLabel" class="stage-cap">Kapasitas Memori: 0 / 6 Slot</span>
+            </div>
+
+            <div id="visualContainer" class="visual-container mode-stack">
+              <!-- Diisi elemen visual blok data secara real-time oleh script.js -->
+            </div>
+
+            <div class="stage-pointers">
+              <span id="pointerInfoLeft">📌 Dasar Tumpukan (Bottom): Kosong</span>
+              <span id="pointerInfoRight">🎯 Puncak Tumpukan (Top): Kosong</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KANAN: Panel Pengujian / Output & Diagnostik -->
+        <div class="output-panel">
+          <div class="panel-title-bar">
+            <h3>📟 Panel Pengujian &amp; Output Pemanggilan</h3>
+          </div>
+
+          <!-- Indikator Pembacaan Hasil -->
+          <div class="telemetry-grid">
+            <div class="tele-box">
+              <span class="tele-label">Elemen Masuk Pertama</span>
+              <strong id="teleFirstIn" class="tele-val">-</strong>
+            </div>
+            <div class="tele-box">
+              <span class="tele-label">Elemen Keluar Pertama</span>
+              <strong id="teleFirstOut" class="tele-val highlight-cyan">-</strong>
+            </div>
+            <div class="tele-box">
+              <span class="tele-label">Prinsip Terdeteksi</span>
+              <strong id="telePrinciple" class="tele-val highlight-yellow">LIFO (Stack)</strong>
+            </div>
+            <div class="tele-box">
+              <span class="tele-label">Kesalahan Langkah</span>
+              <strong id="teleErrorCount" class="tele-val">0 Kali</strong>
+            </div>
+          </div>
+
+          <!-- Urutan Hasil Panggilan / Pengeluaran (Output Dequeue / Pop) -->
+          <div class="output-queue-box">
+            <div class="oq-header">
+              <span>Urutan Objek yang Dipanggil / Dikeluarkan:</span>
+              <span id="outCountBadge" class="badge-mini">0 Objek</span>
+            </div>
+            <div id="processedList" class="processed-list">
+              <div class="empty-hint">Belum ada objek yang dikeluarkan (tekan POP atau DEQUEUE).</div>
+            </div>
+          </div>
+
+          <!-- Alat Penguji Keadilan Antrean (Fairness & Diagnostic Analyzer) -->
+          <div id="diagnosticAlert" class="diagnostic-box neutral">
+            <strong>🔍 Analisis Alat Penguji:</strong>
+            <p id="diagnosticText">Masukkan minimal 3 data pasien/objek lalu keluarkan satu per satu untuk menguji urutan pemrosesannya.</p>
+          </div>
+
+          <!-- Log Aktivitas Real-Time -->
+          <div class="log-terminal">
+            <div class="log-header">LOG OPERASI MEMORI</div>
+            <ul id="opLogList" class="log-list">
+              <li>[SISTEM] Meja simulasi siap digunakan.</li>
+            </ul>
+          </div>
+
+          <!-- Tombol Catat Data & Verifikasi Misi -->
+          <button id="btnRecordVerify" class="btn-verify-full" onclick="recordAndVerifyExperiment()">
+            <span>✅ Catat Data ke Tabel &amp; Verifikasi Misi</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bagian Bawah: Tabel Data Hasil Percobaan -->
+      <div class="experiment-table-card">
+        <div class="exp-header">
+          <div>
+            <h3>📋 Tabel Data Hasil Percobaan Siswa</h3>
+            <p>Data yang tercatat di bawah ini akan otomatis disertakan ke dalam laporan PDF saat Anda mengunduh LKPD.</p>
+          </div>
+          <button class="btn-clear-table" onclick="clearExperimentTable()">Hapus Semua Data</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="exp-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Misi / Skenario</th>
+                <th>Struktur &amp; Prinsip</th>
+                <th>Urutan Data Masuk (Input)</th>
+                <th>Urutan Data Keluar (Output)</th>
+                <th>Evaluasi / Kesimpulan Urutan</th>
+              </tr>
+            </thead>
+            <tbody id="experimentTableBody">
+              <tr class="empty-row">
+                <td colspan="6">Belum ada data percobaan yang dicatat. Lakukan simulasi lalu klik tombol "Catat Data ke Tabel &amp; Verifikasi Misi".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         LAYAR 5: PROSEDUR PERCOBAAN (#view-prosedur)
+         ========================================================= -->
+    <section id="view-prosedur" class="view">
+      <div class="section-header">
+        <span class="section-badge">PANDUAN LANGKAH KERJA</span>
+        <h2>7 Prosedur Praktikum Struktur Data</h2>
+        <p>Ikuti tahapan berurutan berikut agar seluruh misi simulasi dan pengisian LKPD berjalan optimal.</p>
+      </div>
+
+      <div class="procedure-list">
+        <div class="proc-card">
+          <div class="proc-num">1</div>
+          <div class="proc-body">
+            <h3>Pelajari Studi Kasus di Menu Teori</h3>
+            <p>Buka menu <strong>Teori</strong>, baca ilustrasi tumpukan formulir pendaftaran pasien di loket rumah sakit serta perbedaan konsep <em>Antrean (Queue / FIFO)</em> dan <em>Tumpukan (Stack / LIFO)</em>.</p>
+          </div>
+        </div>
+
+        <div class="proc-card">
+          <div class="proc-num">2</div>
+          <div class="proc-body">
+            <h3>Pilih Misi Praktikum pada Layar Simulasi</h3>
+            <p>Buka menu <strong>Simulasi</strong> dan pilih <strong>Misi 1</strong> hingga <strong>Misi 4</strong> secara berurutan pada kartu Pemilih Misi di bagian atas layar.</p>
+          </div>
+        </div>
+
+        <div class="proc-card">
+          <div class="proc-num">3</div>
+          <div class="proc-body">
+            <h3>Atur Mode Struktur Data (Stack atau Queue)</h3>
+            <p>Pada Meja Kerja Simulasi, pilih mode <strong>STACK (LIFO)</strong> atau <strong>QUEUE (FIFO)</strong> sesuai petunjuk misi yang sedang aktif.</p>
+          </div>
+        </div>
+
+        <div class="proc-card">
+          <div class="proc-num">4</div>
+          <div class="proc-body">
+            <h3>Lakukan Operasi Penyimpanan Data (Push / Enqueue)</h3>
+            <p>Pilih nama pasien atau objek (misalnya Pasien 1 s.d. Pasien 4), lalu tekan tombol <strong>PUSH</strong> (pada Stack) atau <strong>ENQUEUE</strong> (pada Queue), atau gunakan tombol <em>Isi 4 Data Berurutan</em>.</p>
+          </div>
+        </div>
+
+        <div class="proc-card">
+          <div class="proc-num">5</div>
+          <div class="proc-body">
+            <h3>Keluarkan Data (Pop / Dequeue) &amp; Amati Urutan Panggilan</h3>
+            <p>Tekan tombol <strong>POP</strong> atau <strong>DEQUEUE</strong> satu per satu hingga seluruh objek keluar. Amati perbandingan antara elemen pertama yang masuk dan elemen pertama yang keluar pada Panel Pengujian di sebelah kanan.</p>
+          </div>
+        </div>
+
+        <div class="proc-card">
+          <div class="proc-num">6</div>
+          <div class="proc-body">
+            <h3>Catat Data Percobaan &amp; Verifikasi Ketuntasan Misi</h3>
+            <p>Klik tombol <strong>"Catat Data ke Tabel &amp; Verifikasi Misi"</strong> agar hasil eksperimen terekam pada Tabel Data Hasil Percobaan di bagian bawah layar simulasi.</p>
+          </div>
+        </div>
+
+        <div class="proc-card">
+          <div class="proc-num">7</div>
+          <div class="proc-body">
+            <h3>Jawab 10 Soal LKPD &amp; Unduh Laporan PDF</h3>
+            <p>Buka menu <strong>LKPD</strong>, lengkapi identitas Nama dan Kelas, kerjakan soal nomor 1 sampai 10 (gunakan fitur tombol <em>Cek</em> pada Bagian B), lalu tekan tombol <strong>"Ubah ke PDF"</strong> untuk mengunduh laporan praktikum ukuran A4.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         LAYAR 6: LKPD DIGITAL DAN KONVERSI PDF (#view-lkpd)
+         ========================================================= -->
+    <section id="view-lkpd" class="view">
+      <div class="section-header">
+        <span class="section-badge">LEMBAR KERJA PESERTA DIDIK (LKPD)</span>
+        <h2>Evaluasi &amp; Laporan Praktikum Struktur Data</h2>
+        <p>Isi identitas dan jawab seluruh pertanyaan berdasarkan hasil percobaan Anda di meja simulasi.</p>
+      </div>
+
+      <!-- Identitas Siswa -->
+      <div class="lkpd-identity-card">
+        <div class="id-field">
+          <label for="studentName">Nama Lengkap Siswa:</label>
+          <input type="text" id="studentName" placeholder="Contoh: Andi Pratama" />
+        </div>
+        <div class="id-field">
+          <label for="studentClass">Kelas / Rombel:</label>
+          <input type="text" id="studentClass" placeholder="Contoh: X.1 / Fase E" />
+        </div>
+      </div>
+
+      <!-- BAGIAN A: Analisis Data Percobaan (Soal 1-4 Textarea) -->
+      <div class="lkpd-section-card">
+        <div class="lkpd-sec-head">
+          <span class="sec-pill">BAGIAN A</span>
+          <h3>Analisis Data Percobaan (Esai Analitis)</h3>
+        </div>
+
+        <div class="question-item">
+          <label for="q1">1. Berdasarkan Misi 1 di meja simulasi, ketika petugas loket rumah sakit menumpuk formulir pendaftaran pasien (Pasien 1 datang pukul 07:00, Pasien 2 pukul 07:05, Pasien 3 pukul 07:10, Pasien 4 pukul 07:15) menggunakan metode <strong>Stack (Push &amp; Pop)</strong>, bagaimana urutan pasien saat dipanggil oleh petugas? Apakah urutan tersebut adil bagi para pasien? Jelaskan alasannya!</label>
+          <textarea id="q1" rows="3" placeholder="Tuliskan hasil pengamatan urutan panggilan pasien dan analisis keadilannya..."></textarea>
+        </div>
+
+        <div class="question-item">
+          <label for="q2">2. Berdasarkan Misi 2, bagaimana perubahan urutan pemanggilan pasien setelah metode penyimpanan di loket diubah menjadi <strong>Queue (Enqueue &amp; Dequeue)</strong>? Mengapa prinsip <em>First In First Out (FIFO)</em> menjadi solusi yang tepat untuk pelayanan publik seperti loket rumah sakit?</label>
+          <textarea id="q2" rows="3" placeholder="Bandingkan urutan output Queue dengan Stack pada kasus loket rumah sakit..."></textarea>
+        </div>
+
+        <div class="question-item">
+          <label for="q3">3. Apabila petugas loket tetap menaruh formulir pendaftaran secara bertumpuk di atas meja, jelaskan bagaimana cara petugas menyusun tumpukan formulir baru ATAU cara mengambil formulir saat memanggil pasien agar pasien yang datang lebih dulu tetap dipanggil lebih dulu!</label>
+          <textarea id="q3" rows="3" placeholder="Jelaskan mekanisme penyusunan atau pengambilan formulirnya..."></textarea>
+        </div>
+
+        <div class="question-item">
+          <label for="q4">4. Pada Misi 3 (Tumpukan Piring/Buku), mengapa piring pertama yang diletakkan di bagian paling bawah tumpukan justru menjadi piring yang paling terakhir diambil? Jelaskan kaitannya dengan efisiensi dan keamanan fisik benda!</label>
+          <textarea id="q4" rows="3" placeholder="Jelaskan alasan fisik dan kaitannya dengan prinsip Last In First Out (LIFO)..."></textarea>
+        </div>
+      </div>
+
+      <!-- BAGIAN B: Ketepatan Konsep & Diagnostik (Soal 5-8 Isian Singkat + Tombol Cek) -->
+      <div class="lkpd-section-card">
+        <div class="lkpd-sec-head">
+          <span class="sec-pill">BAGIAN B</span>
+          <h3>Ketepatan Konsep &amp; Diagnostik Otomatis</h3>
+        </div>
+        <p class="sec-note">Ketik istilah/singkatan yang tepat, lalu klik tombol <strong>"Cek"</strong> untuk memvalidasi jawaban Anda secara langsung.</p>
+
+        <!-- Soal 5 -->
+        <div class="question-item diag-item">
+          <label for="q5">5. Prinsip penyimpanan data pada <strong>Antrean (Queue)</strong> di mana objek yang pertama masuk akan menjadi objek yang pertama keluar disebut dengan singkatan...</label>
+          <div class="diag-input-row">
+            <input type="text" id="q5" placeholder="Ketik singkatan 4 huruf (contoh: FIFO / LIFO)" />
+            <button type="button" class="btn-check" onclick="checkDiagnosticAnswer(5)">Cek</button>
+          </div>
+          <div id="fb-q5" class="diag-feedback"></div>
+        </div>
+
+        <!-- Soal 6 -->
+        <div class="question-item diag-item">
+          <label for="q6">6. Prinsip penyimpanan data pada <strong>Tumpukan (Stack)</strong> di mana objek yang terakhir masuk justru menjadi yang pertama keluar disebut dengan singkatan...</label>
+          <div class="diag-input-row">
+            <input type="text" id="q6" placeholder="Ketik singkatan 4 huruf (contoh: FIFO / LIFO)" />
+            <button type="button" class="btn-check" onclick="checkDiagnosticAnswer(6)">Cek</button>
+          </div>
+          <div id="fb-q6" class="diag-feedback"></div>
+        </div>
+
+        <!-- Soal 7 -->
+        <div class="question-item diag-item">
+          <label for="q7">7. Dalam struktur data <strong>Stack (Tumpukan)</strong>, istilah operasi untuk mengambil atau mengeluarkan elemen dari posisi paling atas tumpukan disebut...</label>
+          <div class="diag-input-row">
+            <input type="text" id="q7" placeholder="Ketik nama operasinya (Push / Pop / Enqueue / Dequeue)" />
+            <button type="button" class="btn-check" onclick="checkDiagnosticAnswer(7)">Cek</button>
+          </div>
+          <div id="fb-q7" class="diag-feedback"></div>
+        </div>
+
+        <!-- Soal 8 -->
+        <div class="question-item diag-item">
+          <label for="q8">8. Dalam struktur data <strong>Queue (Antrean)</strong>, istilah operasi untuk menambahkan objek baru ke barisan belakang antrean disebut...</label>
+          <div class="diag-input-row">
+            <input type="text" id="q8" placeholder="Ketik nama operasinya (Push / Pop / Enqueue / Dequeue)" />
+            <button type="button" class="btn-check" onclick="checkDiagnosticAnswer(8)">Cek</button>
+          </div>
+          <div id="fb-q8" class="diag-feedback"></div>
+        </div>
+      </div>
+
+      <!-- BAGIAN C: Penalaran & Kesimpulan (Soal 9-10 Textarea) -->
+      <div class="lkpd-section-card">
+        <div class="lkpd-sec-head">
+          <span class="sec-pill">BAGIAN C</span>
+          <h3>Penalaran Aplikasi Komputasi &amp; Kesimpulan</h3>
+        </div>
+
+        <div class="question-item">
+          <label for="q9">9. Dalam dunia informatika, fitur tombol <strong>"Undo" (Batalkan Ketikan)</strong> pada aplikasi pengolah kata dan fitur <strong>Antrean Cetak Dokumen (Printer Spooler)</strong> menggunakan struktur data yang berbeda. Tentukan struktur data mana yang cocok untuk <em>Undo</em> dan mana yang cocok untuk <em>Printer Spooler</em>, lalu jelaskan cara kerjanya!</label>
+          <textarea id="q9" rows="3" placeholder="Analisis pemilihan Stack vs Queue untuk fitur Undo dan Printer Spooler..."></textarea>
+        </div>
+
+        <div class="question-item">
+          <label for="q10">10. Buatlah kesimpulan menyeluruh dari praktikum ini mengenai perbedaan utama antara <strong>Stack (Tumpukan)</strong> dan <strong>Queue (Antrean)</strong> beserta pedoman kapan kita harus memilih masing-masing struktur data tersebut dalam menyelesaikan masalah sehari-hari!</label>
+          <textarea id="q10" rows="4" placeholder="Tuliskan kesimpulan akhir praktikum Anda secara lengkap..."></textarea>
+        </div>
+      </div>
+
+      <!-- Tombol Ekspor PDF -->
+      <div class="lkpd-footer-actions">
+        <button id="btnExportPdf" class="btn-primary-xl" onclick="exportLkpdToPdf()">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Ubah ke PDF (Unduh Laporan LKPD A4)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         LAYAR 7: PROFIL PENGEMBANG (#view-pengembang)
+         ========================================================= -->
+    <section id="view-pengembang" class="view">
+      <div class="dev-banner-card">
+        <div class="dev-avatar-wrap">
+          <img
+            src="https://drive.google.com/thumbnail?id=1U0-a5-p9xYrwzxwT4g565PA9yE0QYU5p&sz=w500"
+            alt="Foto Profil Andi Wahidin Burhanuddin"
+            class="dev-avatar"
+            referrerpolicy="no-referrer"
+            onerror="if(!this.dataset.triedLh3){this.dataset.triedLh3='1';this.src='https://lh3.googleusercontent.com/d/1U0-a5-p9xYrwzxwT4g565PA9yE0QYU5p=w500';}else if(!this.dataset.triedLocal){this.dataset.triedLocal='1';this.src='profil.jpg';}else{this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22><rect width=%22120%22 height=%22120%22 rx=%2260%22 fill=%22%2307263d%22/><circle cx=%2260%22 cy=%2246%22 r=%2222%22 fill=%22%23facc15%22/><path d=%22M24 108 C24 82 96 82 96 108%22 fill=%22%2338bdf8%22/></svg>';}"
+          />
+        </div>
+        <div class="dev-info">
+          <span class="section-badge">PENGEMBANG LABORATORIUM VIRTUAL</span>
+          <h2>Andi Wahidin Burhanuddin</h2>
+          <p class="dev-role">Pendidik Informatika • SMA Negeri 12 Wajo, Sulawesi Selatan</p>
+          <p class="dev-bio">
+            Berfokus pada pengembangan ekosistem pembelajaran interaktif berbasis web, pemikiran komputasional (<em>Computational Thinking</em>), visualisasi algoritma dan struktur data, serta integrasi asesmen digital di lingkungan sekolah menengah atas.
+          </p>
+          <div class="dev-meta-pills">
+            <span>📘 Mata Pelajaran: Informatika</span>
+            <span>🏫 Instansi: SMA Negeri 12 Wajo</span>
+            <span>📍 Provinsi: Sulawesi Selatan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Kartu Tentang Lab Maya -->
+      <div class="about-lab-grid">
+        <div class="about-card">
+          <h3>💻 Teknologi</h3>
+          <p>
+            Dibangun menggunakan standar web modern <strong>HTML5 Semantik</strong>, <strong>CSS3 Glassmorphism &amp; Grid Responsif</strong>, <strong>Vanilla JavaScript (ES6+)</strong>, animasi partikel <strong>Canvas 2D</strong>, <strong>Web Audio API Synthesizer</strong> murni tanpa aset audio eksternal, serta <strong>jsPDF 2.5.1</strong> untuk pembuatan dokumen PDF instan di sisi klien.
+          </p>
+        </div>
+
+        <div class="about-card">
+          <h3>🔬 Fitur Lab</h3>
+          <p>
+            Dilengkapi visualizer memori <em>Stack (Push/Pop)</em> dan <em>Queue (Enqueue/Dequeue)</em> secara <em>real-time</em>, studi kasus interaktif Loket Rumah Sakit, 4 misi berjenjang dengan pendeteksi kesalahan teknik, rekaman tabel data eksperimen otomatis, dan LKPD 10 soal terintegrasi.
+          </p>
+        </div>
+
+        <div class="about-card">
+          <h3>🎯 Capaian Pembelajaran</h3>
+          <p>
+            Sesuai Kurikulum Nasional <strong>Informatika Fase E (Kelas X SMA/MA/SMK)</strong> pada elemen <em>Berpikir Komputasional (Computational Thinking)</em>: peserta didik mampu memahami, membandingkan, dan memilih struktur data <strong>Tumpukan (Stack / LIFO)</strong> serta <strong>Antrean (Queue / FIFO)</strong> untuk menyelesaikan permasalahan nyata secara efektif.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 2 Tombol Melayang Audio Synthesizer di Pojok Kiri Bawah -->
+  <div class="floating-audio-controls" aria-label="Kontrol Audio Laboratorium">
+    <button id="btnSfx" class="audio-fab active" onclick="toggleSfx()" title="Efek Suara (SFX) Aktif/Nonaktif">
+      <span id="iconSfx">🔊</span>
+      <span class="fab-label">SFX</span>
+    </button>
+    <button id="btnBgm" class="audio-fab active" onclick="toggleBgm()" title="Musik Latar (BGM) Aktif/Nonaktif">
+      <span id="iconBgm">🎵</span>
+      <span class="fab-label">BGM</span>
+    </button>
+  </div>
+
+  <!-- Toast Notifikasi Ringan -->
+  <div id="toastBox" class="toast-box" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
